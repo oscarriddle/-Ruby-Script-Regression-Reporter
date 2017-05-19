@@ -42,3 +42,62 @@ def traverse(path,word)
     end
   end
 end
+
+
+def process_file(path,word,testname)
+  line_name=1
+  File.open(path) do |file|
+    File.open($root+$output_file, "a") do |data|
+      while line = file.gets
+        line = line.chomp
+        if line.include?(word)
+          data.puts path+"::"+line_num.to_s+"::"+line+"\n"
+          $KEYWORD_DICT[word]=$KEYWORD_DICT[word].to_i+1
+          line.scan(/\*\w,([A-Za-z0-9_-]+)\:*\s/) do |type|
+            if (word=="*E")
+              if ($ERROR_DICT.has_key?(type))
+                $ERROR_DICT[type]=$ERROR_DICT[type].to_i+1
+                if (!$ERROR_DICT[type].include?(testname))
+                  $ERROR_TESTS[type].push(testname)
+                end 
+              else
+                $ERROR_DICT.store(type,1)
+                $ERROR_TESTS[type].push(testname)
+              end
+            elsif(word=="W")
+              if ($WARNING_DICT.has_key?(type))
+                $WARNING_DICT[type]=$WARNING_DICT[type].to_i+1
+                if (!$WARNING_DICT[type].include?(testname))
+                  $WARNING_TESTS[type].push(testname)
+                end 
+              else
+                $WARNING_DICT.store(type,1)
+                $WARNING_TESTS[type].push(testname)
+              end
+            end
+          end
+        line_num=line_num+1
+        else
+          line_num=line_num+1
+          next
+        end
+      end
+    end
+  end
+end  
+    
+# Initialization Section
+$root = "./"
+$output_file="result.dat"
+$date="0"
+$PROJ_SRC_ROOT=ENV["PROJ_SRC_ROOT"]
+$PROJ_GEN_ROOT=ENV["PROJ_GEN_ROOT"]
+$PROJ_NAME=ENV["PROJ_NAME"]
+File.open($PROJ_SRC_ROOT+"/"+$PROJ_NAME+"/.git/refs/heads/master") do |version|
+  $current_version=version.gets.chomp
+end 
+date=Time.new
+
+  
+  
+  
