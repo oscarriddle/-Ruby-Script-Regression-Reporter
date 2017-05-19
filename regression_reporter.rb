@@ -78,13 +78,14 @@ def process_file(path,word,testname)
           end
         line_num=line_num+1
         else
-          line_num=line_num+1
-          next
+        line_num=line_num+1
+        next
         end
       end
     end
   end
-end  
+end
+ 
     
 # Initialization Section
 $root = "./"
@@ -97,7 +98,60 @@ File.open($PROJ_SRC_ROOT+"/"+$PROJ_NAME+"/.git/refs/heads/master") do |version|
   $current_version=version.gets.chomp
 end 
 date=Time.new
+year_format=format('%2d',date.year)
+month_format=format('%2d',date.month)
+day_format=format('%2d',date.day)
+hour_format=format('%2d',date.hour)
+min_format=format('%2d',date.min)
+sec_format=format('%2d',date.sec)
+$date=year_format.to_s+month_format.to_s+day_format.to_s+hour_format.to_s+min_format.to_s+sec_format.to_s
+  
+#--------------------------
+if (File.exist?($output_file))
+  File.delete($root+$output_file)
+else
+end
+  
+$KEYWORD=Array.new()
+$KEYWORD[0]="--- TEST PASSED ---"
+$KEYWORD[1]="*E"
+$KEYWORD[2]="*W"
+$KEYWORD_DICT=Hash.new()
+$ERROR_DICT=Hash.new()
+$ERROR_TEST=Hash.new{|hsh,key| hsh[key]=[]}
+$WARNING_DICT=Hash.new()
+$WARNING_TEST=Hash.new{|hsh,key| hsh[key]=[]}
+$sim_root=$PROJ_GEN_ROOT+"/"+$PROJ_NAME+"/verif/mem/sim/"
+for i in 0..($KEYWORD.size-1)
+  $KEYWORD_DICT.store($KEYWORD[i],0)
+  traverse($sim_root,$KEYWORD[i])
+end
 
+puts "[Scanning Finished]"
+puts ""
+puts ""
+puts "===============Summary of Regression Report==============="
+puts "$PROJ_SRC_ROOT: "+$PROJ_SRC_ROOT+ "| $PROJ_GEN_ROOT: "+$PROJ_GEN_ROOT+ " $PROJ_NAME: "+$PROJ_NAME
+puts "Repository Ver. "+ $current_version
+puts "Date/Time " +date.to_s
+puts ""
+puts "Passed Tests: "+ $KEYWORD_DICT[$KEYWORD[0]].to_s
+puts "ERROR Tests: "+ $KEYWORD_DICT[$KEYWORD[1]].to_s  
+puts "WARNING Tests: "+ $KEYWORD_DICT[$KEYWORD[2]].to_s 
+print_summary()
+puts ""
+ 
+p $ERROR_DICT.each
+$ERROR_TESTS.each_key{|key|
+  $ERROR_TESTS[key].each{|value|
+    puts key.to_s+"::"+value.to_s
+    }  
+}
   
-  
-  
+p $WARNING_DICT.each
+$WARNING_TESTS.each_key{|key|
+  $WARNING_TESTS[key].each{|value|
+    puts key.to_s+"::"+value.to_s
+    }  
+}
+puts "============================================================"
